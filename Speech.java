@@ -22,8 +22,18 @@ public class Speech {
       this.player = new JavaSoundRecorder(this.audioFile);
     }
     public void record() {
-      player.start();
-      player.record();
+      Thread try_this = new Thread(new Runnable() {
+            public void run() {
+                  try {
+                    player.record();
+                  }
+                  catch (Exception e) {
+
+                  }
+             }
+           });
+     try_this.start();
+
     }
     public void stopRecording() {
         player.stopRecording();
