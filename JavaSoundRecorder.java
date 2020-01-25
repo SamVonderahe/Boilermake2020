@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.mycompany.ehhsistant;
+//package com.mycompany.ehhsistant;
 
 import javax.sound.sampled.*;
 import java.io.*;
@@ -14,8 +14,8 @@ public class JavaSoundRecorder {
     static final long RECORD_TIME = 30000;  // 1/2 minute
  
     // path of the wav file
-    String file_path = "noise/"; //Textbox input + /
-    File wavFile = new File(file_path + ".wav");
+    String file_path = ""; //Textbox input + /
+    File wavFile = new File(file_path);
     boolean recording = false;
  
     // format of audio file
