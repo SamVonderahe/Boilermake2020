@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.IOException;
+import java.util.*;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -15,20 +16,23 @@ public class MakeSound {
     private AudioInputStream audioStream;
     private AudioFormat audioFormat;
     private SourceDataLine sourceLine;
+    public boolean interrupt = false;
 
     /**
      * @param filename the name of the file that is going to be played
      */
-    public void playSound(String filename){
+    public void playSound(File file_name, Timer time){
 
-        String strFilename = filename;
+        //String strFilename = filename;
 
-        try {
+     /*   try {
             soundFile = new File(strFilename);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
         }
+        */
+        soundFile = file_name;
 
         try {
             audioStream = AudioSystem.getAudioInputStream(soundFile);
@@ -55,7 +59,13 @@ public class MakeSound {
 
         int nBytesRead = 0;
         byte[] abData = new byte[BUFFER_SIZE];
+        time.start();
         while (nBytesRead != -1) {
+          if (interrupt) {
+            time.end();
+            sourceLine.drain();
+            sourceLine.close();
+          }
             try {
                 nBytesRead = audioStream.read(abData, 0, abData.length);
             } catch (IOException e) {
@@ -66,12 +76,9 @@ public class MakeSound {
                 int nBytesWritten = sourceLine.write(abData, 0, nBytesRead);
             }
         }
+        time.end();
 
         sourceLine.drain();
         sourceLine.close();
-    }
-    public static void main(String args[]) {
-      MakeSound beautiful_noise = new MakeSound();
-      beautiful_noise.playSound("noise/");
     }
 }
