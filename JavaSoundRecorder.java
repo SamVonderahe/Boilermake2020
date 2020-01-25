@@ -1,10 +1,14 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.mycompany.ehhsistant;
+
 import javax.sound.sampled.*;
 import java.io.*;
  
-/**
- * A sample program is to demonstrate how to record sound in Java
- * author: www.codejava.net
- */
+
 public class JavaSoundRecorder {
     // record duration, in milliseconds
     static final long RECORD_TIME = 30000;  // 1/2 minute
@@ -114,7 +118,7 @@ public class JavaSoundRecorder {
         // start recording
         this.start();
     }
-    public void stop_record() {
+    public void stopRecording() {
       this.recording = false;
     }
 }

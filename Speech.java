@@ -1,10 +1,11 @@
+package com.mycompany.ehhsistant;
 import java.util.*;
 import java.io.*;
 public class Speech {
     File audioFile;
     JavaSoundRecorder player;
     Timer tim;
-    FillerStats fillers;
+    //FillerStats fillers;
     String notes;
     ArrayList<Long> checkpoints = new ArrayList<Long>();
     boolean interrupt_playback = false;
@@ -23,6 +24,9 @@ public class Speech {
     public void record() {
       player.start();
       player.record();
+    }
+    public void stopRecording() {
+        player.stopRecording();
     }
     public void addCheckpoint() {
       checkpoints.add(tim.get_time());

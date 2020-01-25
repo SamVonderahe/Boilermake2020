@@ -19,6 +19,7 @@ import javax.swing.SpinnerNumberModel;
 public class EhhsistantGUI extends javax.swing.JFrame {
     Presentation selectedPresentation = null;
     ArrayList<Presentation> presentationList = new ArrayList<Presentation>(0);
+    Speech currentRecording = null;
     /**
      * Creates new form mainFrame1
      */
@@ -65,10 +66,10 @@ public class EhhsistantGUI extends javax.swing.JFrame {
         createNewPresentionButton = new javax.swing.JButton();
         noPresentationSelectedLabel = new javax.swing.JLabel();
         selectPresentationButton = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
+        recordButton = new javax.swing.JButton();
+        pausePlayButton = new javax.swing.JButton();
+        stopButton = new javax.swing.JButton();
+        deleteButton = new javax.swing.JButton();
         jScrollPane4 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
         managePanel = new javax.swing.JPanel();
@@ -104,10 +105,10 @@ public class EhhsistantGUI extends javax.swing.JFrame {
                 .addGap(35, 35, 35)
                 .addGroup(selectPresentationDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(presentationDialogLabel)
-                    .addGroup(selectPresentationDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, selectPresentationDialogLayout.createSequentialGroup()
+                    .addGroup(selectPresentationDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(selectPresentationDialogLayout.createSequentialGroup()
                             .addComponent(cancelPresentationSelectionButton, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(confirmSelectionDialogButton, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 320, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(45, Short.MAX_VALUE))
@@ -119,12 +120,15 @@ public class EhhsistantGUI extends javax.swing.JFrame {
                 .addComponent(presentationDialogLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(selectPresentationDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cancelPresentationSelectionButton)
-                    .addComponent(confirmSelectionDialogButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(selectPresentationDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(confirmSelectionDialogButton)
+                    .addComponent(cancelPresentationSelectionButton))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        selectPresentationDialog.setSize(390, 240);
+        selectPresentationDialog.setLocationRelativeTo(panelContainer);
 
         newPresentationNameLabel.setText("Presentation Name:");
 
@@ -260,13 +264,18 @@ public class EhhsistantGUI extends javax.swing.JFrame {
             }
         });
 
-        jButton1.setText("Record");
+        recordButton.setText("Record");
+        recordButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                recordButtonActionPerformed(evt);
+            }
+        });
 
-        jButton2.setText("Pause/Play");
+        pausePlayButton.setText("Pause/Play");
 
-        jButton3.setText("Stop");
+        stopButton.setText("Stop");
 
-        jButton4.setText("Delete Recording");
+        deleteButton.setText("Delete Recording");
 
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
@@ -292,13 +301,13 @@ public class EhhsistantGUI extends javax.swing.JFrame {
                         .addGroup(recordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 428, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(recordPanelLayout.createSequentialGroup()
-                                .addComponent(jButton1)
+                                .addComponent(recordButton)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton2)
+                                .addComponent(pausePlayButton)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jButton3)
+                                .addComponent(stopButton)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton4)))))
+                                .addComponent(deleteButton)))))
                 .addContainerGap(66, Short.MAX_VALUE))
         );
         recordPanelLayout.setVerticalGroup(
@@ -311,10 +320,10 @@ public class EhhsistantGUI extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(recordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(recordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jButton2)
-                        .addComponent(jButton3)
-                        .addComponent(jButton4))
-                    .addComponent(jButton1))
+                        .addComponent(pausePlayButton)
+                        .addComponent(stopButton)
+                        .addComponent(deleteButton))
+                    .addComponent(recordButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 284, Short.MAX_VALUE)
                 .addGroup(recordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(createNewPresentionButton)
@@ -326,8 +335,12 @@ public class EhhsistantGUI extends javax.swing.JFrame {
 
         panelContainer.addTab("Record Presentation", recordPanel);
 
+        String[] stringArr = new String[presentationList.size()];
+        for (int i = 0; i < presentationList.size(); i++) {
+            stringArr[i] = presentationList.get(i).toString();
+        }
         jList2.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            String[] strings = stringArr;
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
@@ -407,7 +420,8 @@ public class EhhsistantGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_createNewPresentionButtonActionPerformed
 
     private void selectPresentationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectPresentationButtonActionPerformed
-        // TODO add your handling code here:
+        selectPresentationDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        selectPresentationDialog.setVisible(true);
     }//GEN-LAST:event_selectPresentationButtonActionPerformed
 
     private void lengthGoalCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lengthGoalCheckboxActionPerformed
@@ -415,6 +429,11 @@ public class EhhsistantGUI extends javax.swing.JFrame {
         jSpinner2.setVisible(lengthGoalCheckbox.isSelected());
         newPresentationTimeGoalLabel.setVisible(lengthGoalCheckbox.isSelected());
     }//GEN-LAST:event_lengthGoalCheckboxActionPerformed
+
+    private void recordButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_recordButtonActionPerformed
+        currentRecording = new Speech("file", null);
+        currentRecording.record();
+    }//GEN-LAST:event_recordButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -460,10 +479,7 @@ public class EhhsistantGUI extends javax.swing.JFrame {
     private javax.swing.JButton confirmSelectionDialogButton;
     private javax.swing.JButton createNewPresentionButton;
     private javax.swing.JDialog createPresentationDialog;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
+    private javax.swing.JButton deleteButton;
     private javax.swing.JButton jButton5;
     private javax.swing.JButton jButton6;
     private javax.swing.JButton jButton7;
@@ -492,11 +508,14 @@ public class EhhsistantGUI extends javax.swing.JFrame {
     private javax.swing.JLabel newPresentationTimeGoalLabel1;
     private javax.swing.JLabel noPresentationSelectedLabel;
     private javax.swing.JTabbedPane panelContainer;
+    private javax.swing.JButton pausePlayButton;
     private javax.swing.JLabel presentationDialogLabel;
     private javax.swing.JTextField presentationNameTextField;
+    private javax.swing.JButton recordButton;
     private javax.swing.JPanel recordPanel;
     private javax.swing.JButton selectPresentationButton;
     private javax.swing.JDialog selectPresentationDialog;
     private javax.swing.JList<String> selectPresentationDialogList;
+    private javax.swing.JButton stopButton;
     // End of variables declaration//GEN-END:variables
 }

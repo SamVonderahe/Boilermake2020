@@ -1,3 +1,4 @@
+package com.mycompany.ehhsistant;
 import java.util.*;
 
 public class Timer {
