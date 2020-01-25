@@ -153,7 +153,7 @@ public class EhhsistantGUI extends javax.swing.JFrame {
         newPresentationTimeGoalLabel1.setText(":");
 
         jList1.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            String[] strings = getPresentationNameList();
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
@@ -335,12 +335,8 @@ public class EhhsistantGUI extends javax.swing.JFrame {
 
         panelContainer.addTab("Record Presentation", recordPanel);
 
-        String[] stringArr = new String[presentationList.size()];
-        for (int i = 0; i < presentationList.size(); i++) {
-            stringArr[i] = presentationList.get(i).toString();
-        }
         jList2.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = stringArr;
+            String[] strings = getPresentationNameList();
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
@@ -434,7 +430,13 @@ public class EhhsistantGUI extends javax.swing.JFrame {
         currentRecording = new Speech("file", null);
         currentRecording.record();
     }//GEN-LAST:event_recordButtonActionPerformed
-
+    private String[] getPresentationNameList() {
+    String[] stringArr = new String[presentationList.size()];
+    for (int i = 0; i < presentationList.size(); i++) {
+        stringArr[i] = presentationList.get(i).toString();
+    }
+    return stringArr;
+}
     /**
      * @param args the command line arguments
      */
