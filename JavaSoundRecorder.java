@@ -11,7 +11,7 @@ public class JavaSoundRecorder {
  
     // path of the wav file
     String file_path = "noise/"; //Textbox input + /
-    File wavFile = new File(file_path);
+    File wavFile = new File(file_path + ".wav");
     boolean recording = false;
  
     // format of audio file
@@ -19,11 +19,8 @@ public class JavaSoundRecorder {
  
     // the line from which audio data is captured
     TargetDataLine line;
-     JavaSoundRecorder(String file_name) {
-        this.wavFile = new File(file_name);
-        if (wavFile.exists()) {
-            //Ask if they want to override
-        }
+     JavaSoundRecorder(File file_name) {
+        this.wavFile = file_name;
      }
      JavaSoundRecorder() {
         //
