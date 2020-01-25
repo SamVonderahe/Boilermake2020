@@ -20,6 +20,10 @@ public class Speech {
       }
       this.player = new JavaSoundRecorder(this.audioFile);
     }
+    public void record() {
+      player.start();
+      player.record();
+    }
     public void addCheckpoint() {
       checkpoints.add(tim.get_time());
     }
