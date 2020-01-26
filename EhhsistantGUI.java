@@ -1,9 +1,12 @@
 package com.mycompany.ehhsistant;
 
 
-import com.mycompany.ehhsistant.Presentation;
+import java.awt.Image;
 import java.util.ArrayList;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.SpinnerNumberModel;
 
 /*
@@ -17,9 +20,14 @@ import javax.swing.SpinnerNumberModel;
  * @author spencerdouglas
  */
 public class EhhsistantGUI extends javax.swing.JFrame {
+    
+    
     Presentation selectedPresentation = null;
     ArrayList<Presentation> presentationList = new ArrayList<Presentation>(0);
     Speech currentRecording = null;
+    static final String NO_PRES_SELECTED_TEXT = "<html>You currently have no presentation selected.  <br>To create a recording, first select or create a new presentation below.</html>";
+    final String PRES_SELECTED_TEXT = "<html>Current Presentation Practice: %s<br>Press record to make a new practice attempt.</html>";
+
     /**
      * Creates new form mainFrame1
      */
@@ -52,15 +60,16 @@ public class EhhsistantGUI extends javax.swing.JFrame {
         newPresentationTimeGoalLabel = new javax.swing.JLabel();
         lengthGoalCheckbox = new javax.swing.JCheckBox();
         jButton5 = new javax.swing.JButton();
-        jButton6 = new javax.swing.JButton();
+        cancelCreatePresentationButton = new javax.swing.JButton();
         newPresentationNameLabel2 = new javax.swing.JLabel();
         jSpinner3 = new javax.swing.JSpinner(minuteFormat);
         newPresentationTimeGoalLabel1 = new javax.swing.JLabel();
         jSpinner4 = new javax.swing.JSpinner(secondFormat);
         jScrollPane5 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList<>();
+        createPresentationOutlineList = new javax.swing.JList<>();
         jButton7 = new javax.swing.JButton();
         jButton8 = new javax.swing.JButton();
+        jTextField1 = new javax.swing.JTextField();
         panelContainer = new javax.swing.JTabbedPane();
         recordPanel = new javax.swing.JPanel();
         createNewPresentionButton = new javax.swing.JButton();
@@ -71,21 +80,20 @@ public class EhhsistantGUI extends javax.swing.JFrame {
         stopButton = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
         jScrollPane4 = new javax.swing.JScrollPane();
+        recordingRenderingTextArea = new javax.swing.JTextArea();
+        saveRecordingButton = new javax.swing.JButton();
+        jScrollPane6 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
         managePanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jList2 = new javax.swing.JList<>();
+        managePresentationList = new javax.swing.JList<>();
         jScrollPane3 = new javax.swing.JScrollPane();
-        jList3 = new javax.swing.JList<>();
+        manageRecordingList = new javax.swing.JList<>();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
 
-        String[] stringArr = new String[presentationList.size()];
-        for (int i = 0; i < presentationList.size(); i++) {
-            stringArr[i] = presentationList.get(i).toString();
-        }
         selectPresentationDialogList.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = stringArr;
+            String[] strings = getPresentationList();
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
@@ -94,6 +102,11 @@ public class EhhsistantGUI extends javax.swing.JFrame {
         presentationDialogLabel.setText("Please select a presentation from the list below.");
 
         cancelPresentationSelectionButton.setText("Cancel");
+        cancelPresentationSelectionButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelPresentationSelectionButtonActionPerformed(evt);
+            }
+        });
 
         confirmSelectionDialogButton.setText("Select Presentation");
 
@@ -145,23 +158,39 @@ public class EhhsistantGUI extends javax.swing.JFrame {
         });
 
         jButton5.setText("Create Presentation");
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
 
-        jButton6.setText("Cancel");
+        cancelCreatePresentationButton.setText("Cancel");
+        cancelCreatePresentationButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelCreatePresentationButtonActionPerformed(evt);
+            }
+        });
 
-        newPresentationNameLabel2.setText("Add Speech Checkpoint Goal: ");
+        newPresentationNameLabel2.setText("Add Speech Outline Name/Time: ");
 
         newPresentationTimeGoalLabel1.setText(":");
 
-        jList1.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = getPresentationNameList();
+        createPresentationOutlineList.setModel(new javax.swing.AbstractListModel<String>() {
+            String[] strings = {};
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
-        jScrollPane5.setViewportView(jList1);
+        jScrollPane5.setViewportView(createPresentationOutlineList);
 
         jButton7.setText("Add");
 
         jButton8.setText("Remove Selected Goal");
+
+        jTextField1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout createPresentationDialogLayout = new javax.swing.GroupLayout(createPresentationDialog.getContentPane());
         createPresentationDialog.getContentPane().setLayout(createPresentationDialogLayout);
@@ -175,29 +204,33 @@ public class EhhsistantGUI extends javax.swing.JFrame {
                     .addComponent(newPresentationNameLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(createPresentationDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(presentationNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(createPresentationDialogLayout.createSequentialGroup()
-                        .addGroup(createPresentationDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(createPresentationDialogLayout.createSequentialGroup()
-                                .addComponent(jSpinner3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(2, 2, 2)
-                                .addComponent(newPresentationTimeGoalLabel1)
-                                .addGap(3, 3, 3)
-                                .addComponent(jSpinner4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(29, 29, 29)
-                                .addComponent(jButton7))
+                        .addGroup(createPresentationDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(presentationNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(createPresentationDialogLayout.createSequentialGroup()
                                 .addComponent(lengthGoalCheckbox)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jSpinner1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(jSpinner1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(2, 2, 2)
+                                .addComponent(newPresentationTimeGoalLabel)
+                                .addGap(3, 3, 3)
+                                .addComponent(jSpinner2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(createPresentationDialogLayout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addComponent(jTextField1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jSpinner3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(2, 2, 2)
-                        .addComponent(newPresentationTimeGoalLabel)
+                        .addComponent(newPresentationTimeGoalLabel1)
                         .addGap(3, 3, 3)
-                        .addComponent(jSpinner2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(jSpinner4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(29, 29, 29)
+                        .addComponent(jButton7)))
+                .addContainerGap())
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, createPresentationDialogLayout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(cancelCreatePresentationButton, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(37, 37, 37)
                 .addComponent(jButton5)
                 .addGap(70, 70, 70))
@@ -230,7 +263,8 @@ public class EhhsistantGUI extends javax.swing.JFrame {
                     .addComponent(jSpinner3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jSpinner4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(newPresentationTimeGoalLabel1)
-                    .addComponent(jButton7))
+                    .addComponent(jButton7)
+                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -238,7 +272,7 @@ public class EhhsistantGUI extends javax.swing.JFrame {
                 .addGap(17, 17, 17)
                 .addGroup(createPresentationDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton5)
-                    .addComponent(jButton6))
+                    .addComponent(cancelCreatePresentationButton))
                 .addGap(20, 20, 20))
         );
 
@@ -246,6 +280,8 @@ public class EhhsistantGUI extends javax.swing.JFrame {
         createPresentationDialog.setLocationRelativeTo(panelContainer);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setPreferredSize(new java.awt.Dimension(800, 800));
+        setSize(new java.awt.Dimension(800, 800));
 
         createNewPresentionButton.setText("Create New Presentation");
         createNewPresentionButton.addActionListener(new java.awt.event.ActionListener() {
@@ -254,33 +290,76 @@ public class EhhsistantGUI extends javax.swing.JFrame {
             }
         });
 
-        noPresentationSelectedLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        noPresentationSelectedLabel.setText("<html>You currently have no presentation selected.  <br>To create a recording, first select or create a new presentation below.</html>");
+        try {
+            noPresentationSelectedLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+            String text = (selectedPresentation == null) ? NO_PRES_SELECTED_TEXT : PRES_SELECTED_TEXT;
+            noPresentationSelectedLabel.setText(text);
 
-        selectPresentationButton.setText("Select Presentation");
-        selectPresentationButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectPresentationButtonActionPerformed(evt);
+            selectPresentationButton.setText("Select Presentation");
+            selectPresentationButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    selectPresentationButtonActionPerformed(evt);
+                }
+            });
+
+            recordButton.setText("Record");
+            recordButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    recordButtonActionPerformed(evt);
+                }
+            });
+
+            pausePlayButton.setText("Play/Pause");
+            pausePlayButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    pausePlayButtonActionPerformed(evt);
+                }
+            });
+            try {
+                Image img = ImageIO.read(getClass().getResource("resources/pauseplay.svg"));
+                pausePlayButton.setIcon(new ImageIcon(img));
+            } catch (Exception ex) {
+                System.out.println("How");
             }
-        });
 
-        recordButton.setText("Record");
-        recordButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                recordButtonActionPerformed(evt);
-            }
-        });
+            stopButton.setText("End Recording");
+            stopButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    stopButtonActionPerformed(evt);
+                }
+            });
 
-        pausePlayButton.setText("Pause/Play");
+            deleteButton.setText("Delete Recording");
+            deleteButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    deleteButtonActionPerformed(evt);
+                }
+            });
 
-        stopButton.setText("Stop");
+            recordingRenderingTextArea.setColumns(20);
+            recordingRenderingTextArea.setRows(5);
+            recordingRenderingTextArea.setText("Audio Suite Placeholder!\n");
+            recordingRenderingTextArea.setEnabled(false);
+            jScrollPane4.setViewportView(recordingRenderingTextArea);
 
-        deleteButton.setText("Delete Recording");
+            saveRecordingButton.setText("Save/Analyze Practice");
+            //String[] filler results = getFillerResults(currentRecording);
+            saveRecordingButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    saveRecordingButtonActionPerformed(evt);
+                }
+            });
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jTextArea1.setText("Audio Suite Placeholder!\n");
-        jScrollPane4.setViewportView(jTextArea1);
+            jTextArea1.setColumns(20);
+            jTextArea1.setRows(5);
+            jTextArea1.setText("Filler results displayed here, e.g.,\n\nehhhhh: 174\nyouseeat: 35\nokletsasee: 12");
+            jTextArea1.setEnabled(false);
+            jScrollPane6.setViewportView(jTextArea1);
+
+            noPresentationSelectedLabel.setVisible(true);
+        } catch (Exception ex) {
+            System.out.println("presentationLabelException");
+        }
 
         javax.swing.GroupLayout recordPanelLayout = new javax.swing.GroupLayout(recordPanel);
         recordPanel.setLayout(recordPanelLayout);
@@ -289,26 +368,34 @@ public class EhhsistantGUI extends javax.swing.JFrame {
             .addGroup(recordPanelLayout.createSequentialGroup()
                 .addGroup(recordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(recordPanelLayout.createSequentialGroup()
+                        .addGap(82, 82, 82)
+                        .addGroup(recordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(recordPanelLayout.createSequentialGroup()
+                                .addComponent(recordButton, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(pausePlayButton, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(stopButton, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(recordPanelLayout.createSequentialGroup()
+                                .addComponent(saveRecordingButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(deleteButton, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(81, 81, 81))))
+                    .addGroup(recordPanelLayout.createSequentialGroup()
                         .addGap(63, 63, 63)
-                        .addGroup(recordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(noPresentationSelectedLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 466, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(recordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, recordPanelLayout.createSequentialGroup()
                                 .addComponent(createNewPresentionButton, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(selectPresentationButton, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addGroup(recordPanelLayout.createSequentialGroup()
-                        .addGap(86, 86, 86)
-                        .addGroup(recordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 428, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(100, 100, 100)
+                                .addComponent(selectPresentationButton, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 530, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(recordPanelLayout.createSequentialGroup()
-                                .addComponent(recordButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(pausePlayButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(stopButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(deleteButton)))))
-                .addContainerGap(66, Short.MAX_VALUE))
+                                .addGap(34, 34, 34)
+                                .addComponent(noPresentationSelectedLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 466, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(recordPanelLayout.createSequentialGroup()
+                        .addGap(148, 148, 148)
+                        .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 365, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(57, Short.MAX_VALUE))
         );
         recordPanelLayout.setVerticalGroup(
             recordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -318,36 +405,39 @@ public class EhhsistantGUI extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(recordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(recordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(pausePlayButton)
-                        .addComponent(stopButton)
-                        .addComponent(deleteButton))
-                    .addComponent(recordButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 284, Short.MAX_VALUE)
+                .addGroup(recordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(recordButton)
+                    .addComponent(pausePlayButton)
+                    .addComponent(stopButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(recordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(saveRecordingButton)
+                    .addComponent(deleteButton))
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(recordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(createNewPresentionButton)
                     .addComponent(selectPresentationButton))
                 .addGap(51, 51, 51))
         );
 
-        noPresentationSelectedLabel.setVisible(presentationList == null);
-
         panelContainer.addTab("Record Presentation", recordPanel);
 
-        jList2.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = getPresentationNameList();
+        managePresentationList.setModel(new javax.swing.AbstractListModel<String>() {
+            String[] strings = getPresentationList();
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
-        jScrollPane2.setViewportView(jList2);
+        jScrollPane2.setViewportView(managePresentationList);
 
-        jList3.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+        manageRecordingList.setModel(new javax.swing.AbstractListModel<String>() {
+            //String[] strings = getRecordingList(presentationList.get(managePresentationList.getSelectedIndex()));
+            String[] strings = {};
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
-        jScrollPane3.setViewportView(jList3);
+        jScrollPane3.setViewportView(manageRecordingList);
 
         jLabel1.setText("Presentations");
 
@@ -360,7 +450,7 @@ public class EhhsistantGUI extends javax.swing.JFrame {
             .addGroup(managePanelLayout.createSequentialGroup()
                 .addGap(48, 48, 48)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 62, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 127, Short.MAX_VALUE)
                 .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(45, 45, 45))
             .addGroup(managePanelLayout.createSequentialGroup()
@@ -390,21 +480,21 @@ public class EhhsistantGUI extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 600, Short.MAX_VALUE)
+            .addGap(0, 800, Short.MAX_VALUE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addGap(0, 0, Short.MAX_VALUE)
-                    .addComponent(panelContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 0, Short.MAX_VALUE)))
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addContainerGap(65, Short.MAX_VALUE)
+                    .addComponent(panelContainer, javax.swing.GroupLayout.PREFERRED_SIZE, 665, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(70, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 700, Short.MAX_VALUE)
+            .addGap(0, 800, Short.MAX_VALUE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addGap(0, 0, Short.MAX_VALUE)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(panelContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 0, Short.MAX_VALUE)))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
 
         pack();
@@ -413,11 +503,13 @@ public class EhhsistantGUI extends javax.swing.JFrame {
     private void createNewPresentionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createNewPresentionButtonActionPerformed
         createPresentationDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         createPresentationDialog.setVisible(true);
+        
     }//GEN-LAST:event_createNewPresentionButtonActionPerformed
 
     private void selectPresentationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectPresentationButtonActionPerformed
         selectPresentationDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         selectPresentationDialog.setVisible(true);
+        selectPresentationDialogList.setListData(getPresentationList());
     }//GEN-LAST:event_selectPresentationButtonActionPerformed
 
     private void lengthGoalCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lengthGoalCheckboxActionPerformed
@@ -427,16 +519,74 @@ public class EhhsistantGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_lengthGoalCheckboxActionPerformed
 
     private void recordButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_recordButtonActionPerformed
-        currentRecording = new Speech("file", null);
+        currentRecording = new Speech("obama.wav", null);
         currentRecording.record();
+        recordingRenderingTextArea.setText("Recording...");
     }//GEN-LAST:event_recordButtonActionPerformed
-    private String[] getPresentationNameList() {
-    String[] stringArr = new String[presentationList.size()];
-    for (int i = 0; i < presentationList.size(); i++) {
-        stringArr[i] = presentationList.get(i).toString();
+
+    private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
+        currentRecording.stopRecording();
+        recordingRenderingTextArea.setText("Recording complete.\nUse the buttons below to save/analyze or discard your practice.");
+        
+    }//GEN-LAST:event_stopButtonActionPerformed
+
+    private void saveRecordingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveRecordingButtonActionPerformed
+        selectedPresentation.addRecording(currentRecording);
+        
+        recordingRenderingTextArea.setText("Recording saved and analyzed.");
+    }//GEN-LAST:event_saveRecordingButtonActionPerformed
+
+    private void pausePlayButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pausePlayButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_pausePlayButtonActionPerformed
+
+    private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
+        if (JOptionPane.showConfirmDialog(null, "Are you sure you want to delete your recording? This cannot be undone.") == 0) {
+            recordingRenderingTextArea.setText("Recording deleted.");
+            currentRecording = null;
+        }
+    }//GEN-LAST:event_deleteButtonActionPerformed
+
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+        selectedPresentation = new Presentation(presentationNameTextField.getText());
+        presentationList.add(selectedPresentation);
+        managePresentationList.setListData(getPresentationList());
+        createPresentationDialog.setVisible(false);
+        noPresentationSelectedLabel.setText ((selectedPresentation == null) ? NO_PRES_SELECTED_TEXT : String.format(PRES_SELECTED_TEXT, selectedPresentation));
+    }//GEN-LAST:event_jButton5ActionPerformed
+
+    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextField1ActionPerformed
+
+    private void cancelCreatePresentationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelCreatePresentationButtonActionPerformed
+        createPresentationDialog.setVisible(false);
+    }//GEN-LAST:event_cancelCreatePresentationButtonActionPerformed
+
+    private void cancelPresentationSelectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelPresentationSelectionButtonActionPerformed
+        selectPresentationDialog.setVisible(false);
+        selectPresentationDialogList.setSelectedIndex(0);
+    }//GEN-LAST:event_cancelPresentationSelectionButtonActionPerformed
+
+    private String[] getPresentationList() {
+        if (presentationList == null) 
+            return null;
+        String[] stringArr = new String[presentationList.size()];
+        for (int i = 0; i < presentationList.size(); i++) {
+            stringArr[i] = presentationList.get(i).toString();
+        }
+        return stringArr;
     }
-    return stringArr;
-}
+    private String[] getRecordingList(Presentation p) {
+        if (p == null)
+            return new String[0];
+        String[] arr = new String[p.getSpeechList().size()];
+        for (int i = 0; i < p.getSpeechList().size(); i++) {
+            arr[i] = "Recording" + i;
+        }
+        return arr;
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -477,32 +627,34 @@ public class EhhsistantGUI extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton cancelCreatePresentationButton;
     private javax.swing.JButton cancelPresentationSelectionButton;
     private javax.swing.JButton confirmSelectionDialogButton;
     private javax.swing.JButton createNewPresentionButton;
     private javax.swing.JDialog createPresentationDialog;
+    private javax.swing.JList<String> createPresentationOutlineList;
     private javax.swing.JButton deleteButton;
     private javax.swing.JButton jButton5;
-    private javax.swing.JButton jButton6;
     private javax.swing.JButton jButton7;
     private javax.swing.JButton jButton8;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JList<String> jList1;
-    private javax.swing.JList<String> jList2;
-    private javax.swing.JList<String> jList3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JSpinner jSpinner1;
     private javax.swing.JSpinner jSpinner2;
     private javax.swing.JSpinner jSpinner3;
     private javax.swing.JSpinner jSpinner4;
     private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTextField jTextField1;
     private javax.swing.JCheckBox lengthGoalCheckbox;
     private javax.swing.JPanel managePanel;
+    private javax.swing.JList<String> managePresentationList;
+    private javax.swing.JList<String> manageRecordingList;
     private javax.swing.JLabel newPresentationNameLabel;
     private javax.swing.JLabel newPresentationNameLabel1;
     private javax.swing.JLabel newPresentationNameLabel2;
@@ -515,6 +667,8 @@ public class EhhsistantGUI extends javax.swing.JFrame {
     private javax.swing.JTextField presentationNameTextField;
     private javax.swing.JButton recordButton;
     private javax.swing.JPanel recordPanel;
+    private javax.swing.JTextArea recordingRenderingTextArea;
+    private javax.swing.JButton saveRecordingButton;
     private javax.swing.JButton selectPresentationButton;
     private javax.swing.JDialog selectPresentationDialog;
     private javax.swing.JList<String> selectPresentationDialogList;
