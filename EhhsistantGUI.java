@@ -528,12 +528,14 @@ public class EhhsistantGUI extends javax.swing.JFrame {
         currentRecording.stopRecording();
         recordingRenderingTextArea.setText("Recording complete.\nUse the buttons below to save/analyze or discard your practice.");
         
+        
     }//GEN-LAST:event_stopButtonActionPerformed
 
     private void saveRecordingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveRecordingButtonActionPerformed
         selectedPresentation.addRecording(currentRecording);
         
         recordingRenderingTextArea.setText("Recording saved and analyzed.");
+        manageRecordingList.setListData(getRecordingList(selectedPresentation));
     }//GEN-LAST:event_saveRecordingButtonActionPerformed
 
     private void pausePlayButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pausePlayButtonActionPerformed
